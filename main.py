@@ -7,10 +7,8 @@ class AutoFlowPomodoro(QWidget):
     def __init__(self):
         super().__init__()
         
-        # Load the UI file
         uic.loadUi("pomodoro.ui", self)
         
-        # Set margins via code to avoid UI file compatibility errors
         self.layout().setContentsMargins(50, 50, 50, 50)
         
         self.presets = {
@@ -24,7 +22,6 @@ class AutoFlowPomodoro(QWidget):
         self.time_left = self.work_time
         self.is_work_mode = True
         
-        # UI Setup (referencing objects defined in pomodoro.ui)
         self.combo.addItems(self.presets.keys())
         self.combo.setStyleSheet("font-size: 16px; padding: 5px;")
         self.combo.currentTextChanged.connect(self.change_preset)
