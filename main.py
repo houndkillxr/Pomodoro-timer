@@ -1,11 +1,17 @@
 import sys
-from qtpy.QtWidgets import (QApplication, QWidget, QVBoxLayout, 
-                            QHBoxLayout, QLabel, QPushButton, QComboBox)
-from qtpy.QtCore import QTimer, Qt
+from qtpy.QtWidgets import QApplication, QWidget
+from qtpy import uic
+from qtpy.QtCore import QTimer
 
 class AutoFlowPomodoro(QWidget):
     def __init__(self):
         super().__init__()
+        
+        # Load the UI file
+        uic.loadUi("pomodoro.ui", self)
+        
+        # Set margins via code to avoid UI file compatibility errors
+        self.layout().setContentsMargins(50, 50, 50, 50)
         
         self.presets = {
             "25m Work / 5m Break": (25 * 60, 5 * 60),
@@ -18,46 +24,22 @@ class AutoFlowPomodoro(QWidget):
         self.time_left = self.work_time
         self.is_work_mode = True
         
-        self.init_ui()
+        # UI Setup (referencing objects defined in pomodoro.ui)
+        self.combo.addItems(self.presets.keys())
+        self.combo.setStyleSheet("font-size: 16px; padding: 5px;")
+        self.combo.currentTextChanged.connect(self.change_preset)
+        
+        self.mode_label.setStyleSheet("font-size: 28px; font-weight: bold;")
+        self.time_label.setStyleSheet("font-size: 100px; font-weight: bold;")
+        self.toggle_btn.setStyleSheet("padding: 20px; font-size: 20px; font-weight: bold; border-radius: 12px; border: none;")
+        self.toggle_btn.clicked.connect(self.toggle_timer)
+        
         self.apply_theme()
         
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_timer_tick)
         
-        # Start immediately
         self.start_timer()
-
-    def init_ui(self):
-        self.setWindowTitle("Auto-Flow Pomodoro")
-        self.resize(500, 450)
-        
-        layout = QVBoxLayout()
-        layout.setContentsMargins(50, 50, 50, 50)
-        layout.setSpacing(20)
-        
-        self.combo = QComboBox()
-        self.combo.addItems(self.presets.keys())
-        self.combo.setStyleSheet("font-size: 16px; padding: 5px;")
-        self.combo.currentTextChanged.connect(self.change_preset)
-        layout.addWidget(QLabel("Select Mode:"))
-        layout.addWidget(self.combo)
-        
-        self.mode_label = QLabel("WORK TIME")
-        self.mode_label.setAlignment(Qt.AlignCenter)
-        self.mode_label.setStyleSheet("font-size: 28px; font-weight: bold;")
-        layout.addWidget(self.mode_label)
-        
-        self.time_label = QLabel(self.format_time(self.time_left))
-        self.time_label.setAlignment(Qt.AlignCenter)
-        self.time_label.setStyleSheet("font-size: 100px; font-weight: bold;")
-        layout.addWidget(self.time_label)
-        
-        self.toggle_btn = QPushButton("PAUSE")
-        self.toggle_btn.setStyleSheet("padding: 20px; font-size: 20px; font-weight: bold; border-radius: 12px; border: none;")
-        self.toggle_btn.clicked.connect(self.toggle_timer)
-        layout.addWidget(self.toggle_btn)
-        
-        self.setLayout(layout)
 
     def apply_theme(self):
         if self.is_work_mode:
@@ -85,10 +67,8 @@ class AutoFlowPomodoro(QWidget):
             self.timer.stop()
             self.is_work_mode = not self.is_work_mode
             self.apply_theme()
-
             self.time_left = self.work_time if self.is_work_mode else self.break_time
             self.time_label.setText(self.format_time(self.time_left))
-            
             self.start_timer()
 
     def toggle_timer(self):
